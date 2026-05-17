@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>直播观看</title>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      text-align: center;
+    }
+    .wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    
+    /* 新增：视频和文字的包裹容器 */
+    .video-container {
+      position: relative; /* 关键：设置为相对定位，为文字的绝对定位做参照 */
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      background: #000;
+      border-radius: 10px;
+      overflow: hidden; /* 保持圆角不被视频溢出 */
+    }
+
+    video {
+      width: 100%;
+      display: block; /* 消除底部的默认留白间隙 */
+    }
+
+    /* 修改：将文字悬浮在画面内部 */
+    .tip {
+      position: absolute;
+      bottom: 60px; /* 距离底部留出空间，避开视频自带的播放控制条 */
+      left: 50%;
+      transform: translateX(-50%); /* 确保水平居中 */
+      z-index: 10; /* 确保文字在视频上方 */
+      
+      /* 视觉优化 */
+      background: rgba(0, 0, 0, 0.6); /* 半透明黑色背景，防止画面太亮看不清白字 */
+      color: #bbb;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      line-height: 1.6;
+      pointer-events: none; /* 关键：让鼠标/手指点击穿透文字，不影响对视频控制条的点击 */
+      white-space: nowrap; /* 防止文字换行 */
+    }
+
+    /* 当容器处于全屏状态时，可以适当调整文字大小或位置（可选） */
+    .video-container:fullscreen .tip {
+      font-size: 18px;
+      bottom: 80px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>直播观看</h1>
+    
+    <!-- 将 video 和 tip 放在同一个容器中 -->
+    <div class="video-container" id="videoContainer">
+      <video id="video" controls autoplay playsinline webkit-playsinline></video>
+      <div class="tip">
+        免费直播+红单推荐精品小串绝杀波胆，世界杯看球买球 新人首单包赔，下载任小聊：ff1288.com 服务器vip99 加168888
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const video = document.getElementById('video');
+    const videoContainer = document.getElementById('videoContainer');
+    const videoSrc = 'https://xccc16888-lab.github.io/live-page/page12.html';
+
+    // 播放源处理逻辑
+    if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = videoSrc;
+    } else if (Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(videoSrc);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, function () {
+        video.play().catch(() => {});
+      });
+    } else {
+      alert('当前设备不支持播放该直播流');
+    }
+
+    // 全屏优化逻辑：支持双击容器进入/退出全屏
+    // (因为点击原生控制栏的全屏按钮可能会导致文字依然被隐藏，所以我们加入双击容器全屏的逻辑)
+    videoContainer.addEventListener('dblclick', function() {
+      if (!document.fullscreenElement) {
+        if (videoContainer.requestFullscreen) {
+          videoContainer.requestFullscreen();
+        } else if (videoContainer.webkitRequestFullscreen) {
+          videoContainer.webkitRequestFullscreen(); // Safari
+        } else if (videoContainer.msRequestFullscreen) {
+          videoContainer.msRequestFullscreen(); // IE11
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
+      }
+    });
+
+    // 针对 Safari (iOS/macOS) 的原生全屏拦截
+    video.addEventListener('webkitbeginfullscreen', function(e) {
+      e.preventDefault();
+      if (videoContainer.webkitRequestFullscreen) {
+        videoContainer.webkitRequestFullscreen();
+      }
+    });
+  </script>
+</body>
+</html>
